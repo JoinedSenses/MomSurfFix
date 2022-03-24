@@ -131,7 +131,7 @@ stock void InitGameMovement(GameData gd)
 	}
 	
 	//CMoveData
-	if(gEngineVersion == Engine_CSS)
+	if(gEngineVersion == Engine_CSS || gEngineVersion == Engine_TF2)
 	{
 		ASSERT_FMT(gd.GetKeyValue("CMoveData::m_nPlayerHandle", buff, sizeof(buff)), "Can't get \"CMoveData::m_nPlayerHandle\" offset from gamedata.");
 		offsets.cmdoffsets.m_nPlayerHandle = StringToInt(buff);
@@ -209,7 +209,7 @@ stock void InitGameMovement(GameData gd)
 		gUnlockTraceFilter = EndPrepSDKCall();
 		ASSERT(gUnlockTraceFilter);
 	}
-	else if(gEngineVersion == Engine_CSS && gOSType == OSLinux)
+	else if((gEngineVersion == Engine_CSS || gEngineVersion == Engine_TF2) && gOSType == OSLinux)
 	{
 		//ClipVelocity
 		StartPrepSDKCall(SDKCall_Static);
@@ -220,6 +220,9 @@ stock void InitGameMovement(GameData gd)
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+		if (gEngineVersion == Engine_TF2) {
+			PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+		}
 		
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 		
@@ -234,7 +237,7 @@ stock void InitGameMovement(GameData gd)
 		
 		PrepSDKCall_SetVirtual(gd.GetOffset("GetPlayerMins"));
 		
-		if(gEngineVersion == Engine_CSS)
+		if(gEngineVersion == Engine_CSS || gEngineVersion == Engine_TF2)
 			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 		
@@ -246,7 +249,7 @@ stock void InitGameMovement(GameData gd)
 		
 		PrepSDKCall_SetVirtual(gd.GetOffset("GetPlayerMaxs"));
 		
-		if(gEngineVersion == Engine_CSS)
+		if(gEngineVersion == Engine_CSS || gEngineVersion == Engine_TF2)
 			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 		
@@ -332,15 +335,18 @@ stock void UnlockTraceFilter(CGameMovement pThis, CTraceFilterSimple filter)
 	SDKCall(gUnlockTraceFilter, pThis.Address, filter.Address);
 }
 
-stock int ClipVelocity(CGameMovement pThis, Vector invec, Vector normal, Vector out, float overbounce)
+stock int ClipVelocity(CGameMovement pThis, Vector invec, Vector normal, Vector out, float overbounce, float newly_added_surprise_param)
 {
 	if(gEngineVersion == Engine_CSGO)
 	{
 		ASSERT(pThis.Address != Address_Null);
 		return SDKCall(gClipVelocity, pThis.Address, invec.Address, normal.Address, out.Address, overbounce);
 	}
-	else if (gEngineVersion == Engine_CSS && gOSType == OSLinux)
+	else if ((gEngineVersion == Engine_CSS || gEngineVersion == Engine_TF2) && gOSType == OSLinux)
 	{
+		if (gEngineVersion == Engine_TF2) {
+			return SDKCall(gClipVelocity, pThis.Address, invec.Address, normal.Address, out.Address, overbounce, newly_added_surprise_param);
+		}
 		return SDKCall(gClipVelocity, pThis.Address, invec.Address, normal.Address, out.Address, overbounce);
 	}
 	else

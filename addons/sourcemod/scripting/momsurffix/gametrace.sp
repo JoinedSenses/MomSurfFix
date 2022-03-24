@@ -420,7 +420,7 @@ stock void InitGameTrace(GameData gd)
 	ASSERT_FMT(gd.GetKeyValue("CTraceFilterSimple::size", buff, sizeof(buff)), "Can't get \"CTraceFilterSimple::size\" offset from gamedata.");
 	offsets.ctfsoffsets.size = StringToInt(buff);
 	
-	if(gEngineVersion == Engine_CSS)
+	if(gEngineVersion == Engine_CSS || gEngineVersion == Engine_TF2)
 	{
 		offsets.ctfsoffsets.vtable = gd.GetAddress("CTraceFilterSimple::vtable");
 		ASSERT_MSG(offsets.ctfsoffsets.vtable != Address_Null, "Can't get \"CTraceFilterSimple::vtable\" address from gamedata.");

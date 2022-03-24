@@ -211,7 +211,7 @@ stock Address Malloc(int size, const char[] name)
 	MemoryPoolEntry entry;
 	strcopy(entry.name, sizeof(MemoryPoolEntry::name), name);
 	
-	if(gEngineVersion == Engine_CSS && gOSType == OSLinux)
+	if((gEngineVersion == Engine_CSS || gEngineVersion == Engine_TF2) && gOSType == OSLinux)
 		entry.addr = SDKCall(gMalloc, 0, size);
 	else
 		entry.addr = SDKCall(gMalloc, g_pMemAlloc, size);
@@ -234,7 +234,7 @@ stock void Free(Address addr)
 	
 	gMemoryPool.Erase(idx);
 	
-	if(gEngineVersion == Engine_CSS && gOSType == OSLinux)
+	if((gEngineVersion == Engine_CSS || gEngineVersion == Engine_TF2) && gOSType == OSLinux)
 		SDKCall(gFree, 0, addr);
 	else
 		SDKCall(gFree, g_pMemAlloc, addr);

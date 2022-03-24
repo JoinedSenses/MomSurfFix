@@ -1,7 +1,7 @@
-#include "sourcemod"
-#include "sdktools"
-#include "sdkhooks"
-#include "dhooks"
+#include <sourcemod>
+#include <sdktools>
+#include <sdkhooks>
+#include <dhooks>
 
 #define SNAME "[momsurffix2] "
 #define GAME_DATA_FILE "momsurffix2.games"
@@ -240,7 +240,7 @@ void ValidateGameAndOS(GameData gd)
 	ASSERT_FINAL_MSG(gOSType != OSUnknown, "Failed to get OS type or you are trying to load it on unsupported OS!");
 	
 	gEngineVersion = GetEngineVersion();
-	ASSERT_FINAL_MSG(gEngineVersion == Engine_CSS || gEngineVersion == Engine_CSGO, "Only CSGO and CSS are supported by this plugin!");
+	ASSERT_FINAL_MSG(gEngineVersion == Engine_CSS || gEngineVersion == Engine_CSGO || gEngineVersion == Engine_TF2, "Only CSGO, CSS, and TF2 are supported by this plugin!");
 }
 
 void SetupDhooks(GameData gd)
@@ -250,7 +250,9 @@ void SetupDhooks(GameData gd)
 	DHookSetFromConf(dhook, gd, SDKConf_Signature, "CGameMovement::TryPlayerMove");
 	DHookAddParam(dhook, HookParamType_Int);
 	DHookAddParam(dhook, HookParamType_Int);
-	
+	if (gEngineVersion == Engine_TF2) {
+		DHookAddParam(dhook, HookParamType_Float);
+	}
 	ASSERT(DHookEnableDetour(dhook, false, TryPlayerMove_Dhook));
 }
 
@@ -258,13 +260,17 @@ public MRESReturn TryPlayerMove_Dhook(Address pThis, Handle hReturn, Handle hPar
 {
 	Address pFirstDest = DHookGetParam(hParams, 1);
 	Address pFirstTrace = DHookGetParam(hParams, 2);
-	
-	DHookSetReturn(hReturn, TryPlayerMove(view_as<CGameMovement>(pThis), view_as<Vector>(pFirstDest), view_as<CGameTrace>(pFirstTrace)));
+	float newly_added_surprise_param;
+	if (gEngineVersion == Engine_TF2) {
+		newly_added_surprise_param = DHookGetParam(hParams, 3);
+	}
+
+	DHookSetReturn(hReturn, TryPlayerMove(view_as<CGameMovement>(pThis), view_as<Vector>(pFirstDest), view_as<CGameTrace>(pFirstTrace), newly_added_surprise_param));
 	
 	return MRES_Supercede;
 }
 
-int TryPlayerMove(CGameMovement pThis, Vector pFirstDest, CGameTrace pFirstTrace)
+int TryPlayerMove(CGameMovement pThis, Vector pFirstDest, CGameTrace pFirstTrace, float newly_added_surprise_param)
 {
 	float original_velocity[3], primal_velocity[3], fixed_origin[3], valid_plane[3], new_velocity[3], end[3], dir[3];
 	float allFraction, d, time_left = GetGameFrameTime(), planes[MAX_CLIP_PLANES][3];
@@ -324,12 +330,12 @@ int TryPlayerMove(CGameMovement pThis, Vector pFirstDest, CGameTrace pFirstTrace
 				alloced_vector.FromArray(valid_plane);
 				if(valid_plane[2] >= 0.7 && valid_plane[2] <= 1.0)
 				{
-					ClipVelocity(pThis, vecVelocity, alloced_vector, vecVelocity, 1.0);
+					ClipVelocity(pThis, vecVelocity, alloced_vector, vecVelocity, 1.0, newly_added_surprise_param);
 					vecVelocity.ToArray(original_velocity);
 				}
 				else
 				{
-					ClipVelocity(pThis, vecVelocity, alloced_vector, vecVelocity, 1.0 + gBounce.FloatValue * (1.0 - pThis.player.m_surfaceFriction));
+					ClipVelocity(pThis, vecVelocity, alloced_vector, vecVelocity, 1.0 + gBounce.FloatValue * (1.0 - pThis.player.m_surfaceFriction), newly_added_surprise_param);
 					vecVelocity.ToArray(original_velocity);
 				}
 				alloced_vector.ToArray(valid_plane);
@@ -532,7 +538,7 @@ int TryPlayerMove(CGameMovement pThis, Vector pFirstDest, CGameTrace pFirstTrace
 				vec1.FromArray(original_velocity);
 				alloced_vector2.FromArray(planes[0]);
 				alloced_vector.FromArray(new_velocity);
-				ClipVelocity(pThis, vec1, alloced_vector2, alloced_vector, 1.0);
+				ClipVelocity(pThis, vec1, alloced_vector2, alloced_vector, 1.0, newly_added_surprise_param);
 				alloced_vector.ToArray(original_velocity);
 				alloced_vector.ToArray(new_velocity);
 			}
@@ -541,7 +547,7 @@ int TryPlayerMove(CGameMovement pThis, Vector pFirstDest, CGameTrace pFirstTrace
 				vec1.FromArray(original_velocity);
 				alloced_vector2.FromArray(planes[0]);
 				alloced_vector.FromArray(new_velocity);
-				ClipVelocity(pThis, vec1, alloced_vector2, alloced_vector, 1.0 + gBounce.FloatValue * (1.0 - pThis.player.m_surfaceFriction));
+				ClipVelocity(pThis, vec1, alloced_vector2, alloced_vector, 1.0 + gBounce.FloatValue * (1.0 - pThis.player.m_surfaceFriction), newly_added_surprise_param);
 				alloced_vector.ToArray(new_velocity);
 			}
 			PROF_STOP(5);
@@ -557,7 +563,7 @@ int TryPlayerMove(CGameMovement pThis, Vector pFirstDest, CGameTrace pFirstTrace
 			{
 				alloced_vector2.FromArray(original_velocity);
 				alloced_vector.FromArray(planes[i]);
-				ClipVelocity(pThis, alloced_vector2, alloced_vector, vecVelocity, 1.0);
+				ClipVelocity(pThis, alloced_vector2, alloced_vector, vecVelocity, 1.0, newly_added_surprise_param);
 				alloced_vector.ToArray(planes[i]);
 				
 				for(j = 0; j < numplanes; j++)
@@ -704,7 +710,7 @@ stock void UTIL_TraceRay(Ray_t ray, int mask, CGameMovement gm, int collisionGro
 		
 		UnlockTraceFilter(gm, filter);
 	}
-	else if(gEngineVersion == Engine_CSS)
+	else if(gEngineVersion == Engine_CSS || gEngineVersion == Engine_TF2)
 	{
 		CTraceFilterSimple filter = CTraceFilterSimple();
 		filter.Init(LookupEntity(gm.mv.m_nPlayerHandle), collisionGroup);

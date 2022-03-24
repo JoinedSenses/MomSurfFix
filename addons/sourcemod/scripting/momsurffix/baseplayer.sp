@@ -115,7 +115,7 @@ stock bool InitBasePlayer(GameData gd)
 	char buff[128];
 	bool early = false;
 	
-	if(gEngineVersion == Engine_CSS)
+	if(gEngineVersion == Engine_CSS || gEngineVersion == Engine_TF2)
 	{
 		//g_pEntityList
 		g_pEntityList = view_as<CBaseEntityList>(gd.GetAddress("g_pEntityList"));
