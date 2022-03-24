@@ -265,7 +265,7 @@
 			
 			"TracePlayerBBox"
 			{
-				"windows"		"10"
+				"windows"		"8"
 				"linux"			"9"
 			}
 			
