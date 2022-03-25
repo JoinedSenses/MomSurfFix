@@ -199,7 +199,7 @@ stock void InitGameMovement(GameData gd)
 		
 		gLockTraceFilter = EndPrepSDKCall();
 		ASSERT(gLockTraceFilter);
-		
+		      
 		//UnlockTraceFilter
 		StartPrepSDKCall(SDKCall_Raw);
 		

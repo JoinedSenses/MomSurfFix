@@ -89,9 +89,9 @@
 		
 			//CMoveData
 			"CMoveData::m_nPlayerHandle"		"4"
-			"CMoveData::m_vecVelocity"			"64"
+			"CMoveData::m_vecVelocity"			"68"
 			//...
-			"CMoveData::m_vecAbsOrigin"			"152"
+			"CMoveData::m_vecAbsOrigin"			"156"
 			
 			//CGameTrace
 			"CGameTrace::m_pEnt"				"74"
