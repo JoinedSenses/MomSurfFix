@@ -115,44 +115,32 @@ stock bool InitBasePlayer(GameData gd)
 	char buff[128];
 	bool early = false;
 	
-	if(gEngineVersion == Engine_CSS)
-	{
-		//g_pEntityList
-		g_pEntityList = view_as<CBaseEntityList>(gd.GetAddress("g_pEntityList"));
-		ASSERT_MSG(g_pEntityList.Address != Address_Null, "Can't get \"g_pEntityList\" address from gamedata.");
-		
-		//CBaseEntityList
-		ASSERT_FMT(gd.GetKeyValue("CBaseEntityList::m_EntPtrArray", buff, sizeof(buff)), "Can't get \"CBaseEntityList::m_EntPtrArray\" offset from gamedata.");
-		offsets.cbeloffsets.m_EntPtrArray = StringToInt(buff);
-		
-		//CEntInfo
-		ASSERT_FMT(gd.GetKeyValue("CEntInfo::m_pEntity", buff, sizeof(buff)), "Can't get \"CEntInfo::m_pEntity\" offset from gamedata.");
-		offsets.ceioffsets.m_pEntity = StringToInt(buff);
-		ASSERT_FMT(gd.GetKeyValue("CEntInfo::m_SerialNumber", buff, sizeof(buff)), "Can't get \"CEntInfo::m_SerialNumber\" offset from gamedata.");
-		offsets.ceioffsets.m_SerialNumber = StringToInt(buff);
-		ASSERT_FMT(gd.GetKeyValue("CEntInfo::size", buff, sizeof(buff)), "Can't get \"CEntInfo::size\" offset from gamedata.");
-		offsets.ceioffsets.size = StringToInt(buff);
-		
-		//CBaseHandle
-		ASSERT_FMT(gd.GetKeyValue("CBaseHandle::m_Index", buff, sizeof(buff)), "Can't get \"CBaseHandle::m_Index\" offset from gamedata.");
-		offsets.cbhoffsets.m_Index = StringToInt(buff);
-		
-		//CBasePlayer
-		ASSERT_FMT(gd.GetKeyValue("CBasePlayer::m_surfaceFriction", buff, sizeof(buff)), "Can't get \"CBasePlayer::m_surfaceFriction\" offset from gamedata.");
-		int offs = StringToInt(buff);
-		int prop_offs = FindSendPropInfo("CBasePlayer", "m_szLastPlaceName");
-		ASSERT_FMT(prop_offs > 0, "Can't get \"CBasePlayer::m_szLastPlaceName\" offset from FindSendPropInfo().");
-		offsets.cbpoffsets.m_surfaceFriction = prop_offs + offs;
-	}
-	else if(gEngineVersion == Engine_CSGO)
-	{
-		//CBasePlayer
-		ASSERT_FMT(gd.GetKeyValue("CBasePlayer::m_surfaceFriction", buff, sizeof(buff)), "Can't get \"CBasePlayer::m_surfaceFriction\" offset from gamedata.");
-		int offs = StringToInt(buff);
-		int prop_offs = FindSendPropInfo("CBasePlayer", "m_ubEFNoInterpParity");
-		ASSERT_FMT(prop_offs > 0, "Can't get \"CBasePlayer::m_ubEFNoInterpParity\" offset from FindSendPropInfo().");
-		offsets.cbpoffsets.m_surfaceFriction = prop_offs - offs;
-	}
+	//g_pEntityList
+	g_pEntityList = view_as<CBaseEntityList>(gd.GetAddress("g_pEntityList"));
+	ASSERT_MSG(g_pEntityList.Address != Address_Null, "Can't get \"g_pEntityList\" address from gamedata.");
+	
+	//CBaseEntityList
+	ASSERT_FMT(gd.GetKeyValue("CBaseEntityList::m_EntPtrArray", buff, sizeof(buff)), "Can't get \"CBaseEntityList::m_EntPtrArray\" offset from gamedata.");
+	offsets.cbeloffsets.m_EntPtrArray = StringToInt(buff);
+	
+	//CEntInfo
+	ASSERT_FMT(gd.GetKeyValue("CEntInfo::m_pEntity", buff, sizeof(buff)), "Can't get \"CEntInfo::m_pEntity\" offset from gamedata.");
+	offsets.ceioffsets.m_pEntity = StringToInt(buff);
+	ASSERT_FMT(gd.GetKeyValue("CEntInfo::m_SerialNumber", buff, sizeof(buff)), "Can't get \"CEntInfo::m_SerialNumber\" offset from gamedata.");
+	offsets.ceioffsets.m_SerialNumber = StringToInt(buff);
+	ASSERT_FMT(gd.GetKeyValue("CEntInfo::size", buff, sizeof(buff)), "Can't get \"CEntInfo::size\" offset from gamedata.");
+	offsets.ceioffsets.size = StringToInt(buff);
+	
+	//CBaseHandle
+	ASSERT_FMT(gd.GetKeyValue("CBaseHandle::m_Index", buff, sizeof(buff)), "Can't get \"CBaseHandle::m_Index\" offset from gamedata.");
+	offsets.cbhoffsets.m_Index = StringToInt(buff);
+	
+	//CBasePlayer
+	ASSERT_FMT(gd.GetKeyValue("CBasePlayer::m_surfaceFriction", buff, sizeof(buff)), "Can't get \"CBasePlayer::m_surfaceFriction\" offset from gamedata.");
+	int offs = StringToInt(buff);
+	int prop_offs = FindSendPropInfo("CBasePlayer", "m_szLastPlaceName");
+	ASSERT_FMT(prop_offs > 0, "Can't get \"CBasePlayer::m_szLastPlaceName\" offset from FindSendPropInfo().");
+	offsets.cbpoffsets.m_surfaceFriction = prop_offs + offs;
 	
 	offsets.cbpoffsets.m_hGroundEntity = FindSendPropInfo("CBasePlayer", "m_hGroundEntity");
 	ASSERT_FMT(offsets.cbpoffsets.m_hGroundEntity > 0, "Can't get \"CBasePlayer::m_hGroundEntity\" offset from FindSendPropInfo().");

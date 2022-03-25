@@ -122,43 +122,23 @@ stock void InitGameMovement(GameData gd)
 	ASSERT_FMT(gd.GetKeyValue("CGameMovement::mv", buff, sizeof(buff)), "Can't get \"CGameMovement::mv\" offset from gamedata.");
 	offsets.cgmoffsets.mv = StringToInt(buff);
 	
-	if(gEngineVersion == Engine_CSGO)
-	{
-		ASSERT_FMT(gd.GetKeyValue("CGameMovement::m_pTraceListData", buff, sizeof(buff)), "Can't get \"CGameMovement::m_pTraceListData\" offset from gamedata.");
-		offsets.cgmoffsets.m_pTraceListData = StringToInt(buff);
-		ASSERT_FMT(gd.GetKeyValue("CGameMovement::m_nTraceCount", buff, sizeof(buff)), "Can't get \"CGameMovement::m_nTraceCount\" offset from gamedata.");
-		offsets.cgmoffsets.m_nTraceCount = StringToInt(buff);
-	}
-	
-	//CMoveData
-	if(gEngineVersion == Engine_CSS)
-	{
-		ASSERT_FMT(gd.GetKeyValue("CMoveData::m_nPlayerHandle", buff, sizeof(buff)), "Can't get \"CMoveData::m_nPlayerHandle\" offset from gamedata.");
-		offsets.cmdoffsets.m_nPlayerHandle = StringToInt(buff);
-	}
+	ASSERT_FMT(gd.GetKeyValue("CMoveData::m_nPlayerHandle", buff, sizeof(buff)), "Can't get \"CMoveData::m_nPlayerHandle\" offset from gamedata.");
+	offsets.cmdoffsets.m_nPlayerHandle = StringToInt(buff);
 	
 	ASSERT_FMT(gd.GetKeyValue("CMoveData::m_vecVelocity", buff, sizeof(buff)), "Can't get \"CMoveData::m_vecVelocity\" offset from gamedata.");
 	offsets.cmdoffsets.m_vecVelocity = StringToInt(buff);
 	ASSERT_FMT(gd.GetKeyValue("CMoveData::m_vecAbsOrigin", buff, sizeof(buff)), "Can't get \"CMoveData::m_vecAbsOrigin\" offset from gamedata.");
 	offsets.cmdoffsets.m_vecAbsOrigin = StringToInt(buff);
+
+	//sm_pSingleton for late loading
+	sm_pSingleton = view_as<IMoveHelper>(gd.GetAddress("sm_pSingleton"));
 	
-	if(gEngineVersion == Engine_CSGO)
-	{
-		//sm_pSingleton
-		sm_pSingleton = view_as<IMoveHelper>(gd.GetAddress("sm_pSingleton"));
-		ASSERT_MSG(sm_pSingleton.Address != Address_Null, "Can't get \"sm_pSingleton\" address from gamedata.");
-	}
-	else
-	{
-		//sm_pSingleton for late loading
-		sm_pSingleton = view_as<IMoveHelper>(gd.GetAddress("sm_pSingleton"));
-		
-		//CMoveHelperServer::CMoveHelperServer
-		Handle dhook = DHookCreateDetour(Address_Null, CallConv_CDECL, ReturnType_Int, ThisPointer_Ignore);
-		ASSERT_MSG(DHookSetFromConf(dhook, gd, SDKConf_Signature, "CMoveHelperServer::CMoveHelperServer"), "Failed to get \"CMoveHelperServer::CMoveHelperServer\" signature.");
-		DHookAddParam(dhook, HookParamType_Int, .flag = DHookPass_ByRef);
-		DHookEnableDetour(dhook, true, CMoveHelperServer_Dhook);
-	}
+	//CMoveHelperServer::CMoveHelperServer
+	Handle dhook = DHookCreateDetour(Address_Null, CallConv_CDECL, ReturnType_Int, ThisPointer_Ignore);
+	ASSERT_MSG(DHookSetFromConf(dhook, gd, SDKConf_Signature, "CMoveHelperServer::CMoveHelperServer"), "Failed to get \"CMoveHelperServer::CMoveHelperServer\" signature.");
+	DHookAddParam(dhook, HookParamType_Int, .flag = DHookPass_ByRef);
+	DHookEnableDetour(dhook, true, CMoveHelperServer_Dhook);
+
 	
 	//AddToTouched
 	StartPrepSDKCall(SDKCall_Raw);
@@ -173,43 +153,7 @@ stock void InitGameMovement(GameData gd)
 	gAddToTouched = EndPrepSDKCall();
 	ASSERT(gAddToTouched);
 	
-	if(gEngineVersion == Engine_CSGO)
-	{
-		//ClipVelocity
-		StartPrepSDKCall(SDKCall_Raw);
-		
-		PrepSDKCall_SetVirtual(gd.GetOffset("ClipVelocity"));
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
-		
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		
-		gClipVelocity = EndPrepSDKCall();
-		ASSERT(gClipVelocity);
-		
-		//LockTraceFilter
-		StartPrepSDKCall(SDKCall_Raw);
-		
-		PrepSDKCall_SetVirtual(gd.GetOffset("LockTraceFilter"));
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		
-		gLockTraceFilter = EndPrepSDKCall();
-		ASSERT(gLockTraceFilter);
-		
-		//UnlockTraceFilter
-		StartPrepSDKCall(SDKCall_Raw);
-		
-		PrepSDKCall_SetVirtual(gd.GetOffset("UnlockTraceFilter"));
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer);
-		
-		gUnlockTraceFilter = EndPrepSDKCall();
-		ASSERT(gUnlockTraceFilter);
-	}
-	else if(gEngineVersion == Engine_CSS && gOSType == OSLinux)
+	if (gOSType == OSLinux)
 	{
 		//ClipVelocity
 		StartPrepSDKCall(SDKCall_Static);
@@ -220,6 +164,7 @@ stock void InitGameMovement(GameData gd)
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
 		
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 		
@@ -227,15 +172,14 @@ stock void InitGameMovement(GameData gd)
 		ASSERT(gClipVelocity);
 	}
 	
-	if(gEngineVersion == Engine_CSGO || gOSType == OSWindows)
+	if(gOSType == OSWindows)
 	{
 		//GetPlayerMins
 		StartPrepSDKCall(SDKCall_Raw);
 		
 		PrepSDKCall_SetVirtual(gd.GetOffset("GetPlayerMins"));
 		
-		if(gEngineVersion == Engine_CSS)
-			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 		
 		gGetPlayerMins = EndPrepSDKCall();
@@ -246,8 +190,7 @@ stock void InitGameMovement(GameData gd)
 		
 		PrepSDKCall_SetVirtual(gd.GetOffset("GetPlayerMaxs"));
 		
-		if(gEngineVersion == Engine_CSS)
-			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 		
 		gGetPlayerMaxs = EndPrepSDKCall();
@@ -332,45 +275,38 @@ stock void UnlockTraceFilter(CGameMovement pThis, CTraceFilterSimple filter)
 	SDKCall(gUnlockTraceFilter, pThis.Address, filter.Address);
 }
 
-stock int ClipVelocity(CGameMovement pThis, Vector invec, Vector normal, Vector out, float overbounce)
+stock int ClipVelocity(CGameMovement pThis, Vector invec, Vector normal, Vector out, float overbounce, float newly_added_surprise_param)
 {
-	if(gEngineVersion == Engine_CSGO)
+	if (gOSType == OSLinux)
 	{
-		ASSERT(pThis.Address != Address_Null);
-		return SDKCall(gClipVelocity, pThis.Address, invec.Address, normal.Address, out.Address, overbounce);
+		return SDKCall(gClipVelocity, pThis.Address, invec.Address, normal.Address, out.Address, overbounce, newly_added_surprise_param);
 	}
-	else if (gEngineVersion == Engine_CSS && gOSType == OSLinux)
+
+	float backoff, angle, adjust;
+	int blocked;
+	
+	angle = normal.z;
+	
+	if(angle > 0.0)
+		blocked |= 0x01;
+	if(CloseEnoughFloat(angle, 0.0))
+		blocked |= 0x02;
+	
+	backoff = invec.Dot(VectorToArray(normal)) * overbounce;
+	
+	out.x = invec.x - (normal.x * backoff);
+	out.y = invec.y - (normal.y * backoff);
+	out.z = invec.z - (normal.z * backoff);
+	
+	adjust = out.Dot(VectorToArray(normal));
+	if(adjust < 0.0)
 	{
-		return SDKCall(gClipVelocity, pThis.Address, invec.Address, normal.Address, out.Address, overbounce);
+		out.x -= (normal.x * adjust);
+		out.y -= (normal.y * adjust);
+		out.z -= (normal.z * adjust);
 	}
-	else
-	{
-		float backoff, angle, adjust;
-		int blocked;
-		
-		angle = normal.z;
-		
-		if(angle > 0.0)
-			blocked |= 0x01;
-		if(CloseEnoughFloat(angle, 0.0))
-			blocked |= 0x02;
-		
-		backoff = invec.Dot(VectorToArray(normal)) * overbounce;
-		
-		out.x = invec.x - (normal.x * backoff);
-		out.y = invec.y - (normal.y * backoff);
-		out.z = invec.z - (normal.z * backoff);
-		
-		adjust = out.Dot(VectorToArray(normal));
-		if(adjust < 0.0)
-		{
-			out.x -= (normal.x * adjust);
-			out.y -= (normal.y * adjust);
-			out.z -= (normal.z * adjust);
-		}
-		
-		return blocked;
-	}
+	
+	return blocked;
 }
 
 stock Vector GetPlayerMinsCSS(CGameMovement pThis, Vector vec)
@@ -391,8 +327,8 @@ stock Vector GetPlayerMaxsCSS(CGameMovement pThis, Vector vec)
 		SDKCall(gGetPlayerMaxs, vec.Address, pThis.Address);
 		return vec;
 	}
-	else
-		return SDKCall(gGetPlayerMaxs, pThis.Address, vec.Address);
+
+	return SDKCall(gGetPlayerMaxs, pThis.Address, vec.Address);
 }
 
 stock Vector GetPlayerMins(CGameMovement pThis)

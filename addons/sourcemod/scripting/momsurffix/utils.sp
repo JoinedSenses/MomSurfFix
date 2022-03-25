@@ -145,7 +145,7 @@ stock void InitUtils(GameData gd)
 	gCreateInterface = EndPrepSDKCall();
 	ASSERT(gCreateInterface);
 	
-	if(gEngineVersion == Engine_CSGO || gOSType == OSWindows)
+	if(gOSType == OSWindows)
 	{
 		//g_pMemAlloc
 		g_pMemAlloc = gd.GetAddress("g_pMemAlloc");
@@ -211,7 +211,7 @@ stock Address Malloc(int size, const char[] name)
 	MemoryPoolEntry entry;
 	strcopy(entry.name, sizeof(MemoryPoolEntry::name), name);
 	
-	if(gEngineVersion == Engine_CSS && gOSType == OSLinux)
+	if(gOSType == OSLinux)
 		entry.addr = SDKCall(gMalloc, 0, size);
 	else
 		entry.addr = SDKCall(gMalloc, g_pMemAlloc, size);
@@ -234,7 +234,7 @@ stock void Free(Address addr)
 	
 	gMemoryPool.Erase(idx);
 	
-	if(gEngineVersion == Engine_CSS && gOSType == OSLinux)
+	if(gOSType == OSLinux)
 		SDKCall(gFree, 0, addr);
 	else
 		SDKCall(gFree, g_pMemAlloc, addr);

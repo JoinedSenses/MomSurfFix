@@ -252,8 +252,6 @@ methodmap Ray_t < AllocatableBase
 		SubtractVectors(end, start, buff);
 		this.m_Delta.FromArray(buff);
 		
-		if(gEngineVersion == Engine_CSGO)
-			this.m_pWorldAxisTransform = Address_Null;
 		this.m_IsSwept = (this.m_Delta.LengthSqr() != 0.0);
 		
 		SubtractVectors(maxs, mins, buff);
@@ -395,12 +393,6 @@ stock void InitGameTrace(GameData gd)
 	ASSERT_FMT(gd.GetKeyValue("Ray_t::m_Extents", buff, sizeof(buff)), "Can't get \"Ray_t::m_Extents\" offset from gamedata.");
 	offsets.rtoffsets.m_Extents = StringToInt(buff);
 	
-	if(gEngineVersion == Engine_CSGO)
-	{
-		ASSERT_FMT(gd.GetKeyValue("Ray_t::m_pWorldAxisTransform", buff, sizeof(buff)), "Can't get \"Ray_t::m_pWorldAxisTransform\" offset from gamedata.");
-		offsets.rtoffsets.m_pWorldAxisTransform = StringToInt(buff);
-	}
-	
 	ASSERT_FMT(gd.GetKeyValue("Ray_t::m_IsRay", buff, sizeof(buff)), "Can't get \"Ray_t::m_IsRay\" offset from gamedata.");
 	offsets.rtoffsets.m_IsRay = StringToInt(buff);
 	ASSERT_FMT(gd.GetKeyValue("Ray_t::m_IsSwept", buff, sizeof(buff)), "Can't get \"Ray_t::m_IsSwept\" offset from gamedata.");
@@ -420,11 +412,8 @@ stock void InitGameTrace(GameData gd)
 	ASSERT_FMT(gd.GetKeyValue("CTraceFilterSimple::size", buff, sizeof(buff)), "Can't get \"CTraceFilterSimple::size\" offset from gamedata.");
 	offsets.ctfsoffsets.size = StringToInt(buff);
 	
-	if(gEngineVersion == Engine_CSS)
-	{
-		offsets.ctfsoffsets.vtable = gd.GetAddress("CTraceFilterSimple::vtable");
-		ASSERT_MSG(offsets.ctfsoffsets.vtable != Address_Null, "Can't get \"CTraceFilterSimple::vtable\" address from gamedata.");
-	}
+	offsets.ctfsoffsets.vtable = gd.GetAddress("CTraceFilterSimple::vtable");
+	ASSERT_MSG(offsets.ctfsoffsets.vtable != Address_Null, "Can't get \"CTraceFilterSimple::vtable\" address from gamedata.");
 	
 	//enginetrace
 	gd.GetKeyValue("CEngineTrace", buff, sizeof(buff));
@@ -442,33 +431,6 @@ stock void InitGameTrace(GameData gd)
 	
 	gTraceRay = EndPrepSDKCall();
 	ASSERT(gTraceRay);
-	
-	if(gEngineVersion == Engine_CSGO)
-	{
-		//TraceRayAgainstLeafAndEntityList
-		StartPrepSDKCall(SDKCall_Raw);
-		
-		PrepSDKCall_SetVirtual(gd.GetOffset("TraceRayAgainstLeafAndEntityList"));
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		
-		gTraceRayAgainstLeafAndEntityList = EndPrepSDKCall();
-		ASSERT(gTraceRayAgainstLeafAndEntityList);
-		
-		//CanTraceRay
-		StartPrepSDKCall(SDKCall_Raw);
-		
-		PrepSDKCall_SetVirtual(gd.GetOffset("CanTraceRay"));
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		
-		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
-		
-		gCanTraceRay = EndPrepSDKCall();
-		ASSERT(gCanTraceRay);
-	}
 }
 
 stock void TraceRayAgainstLeafAndEntityList(Ray_t ray, ITraceListData traceData, int mask, CTraceFilterSimple filter, CGameTrace trace)
