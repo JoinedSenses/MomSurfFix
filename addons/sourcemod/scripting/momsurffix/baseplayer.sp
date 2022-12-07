@@ -1,8 +1,10 @@
-#define	MAX_EDICT_BITS			11
-#define NUM_ENT_ENTRY_BITS		(MAX_EDICT_BITS + 1)
-#define NUM_ENT_ENTRIES			(1 << NUM_ENT_ENTRY_BITS)
-#define ENT_ENTRY_MASK			(NUM_ENT_ENTRIES - 1)
-#define INVALID_EHANDLE_INDEX	0xFFFFFFFF
+#define MAX_EDICT_BITS                  11
+#define NUM_ENT_ENTRY_BITS              (MAX_EDICT_BITS + 1)
+#define NUM_ENT_ENTRIES                 (1 << NUM_ENT_ENTRY_BITS)
+#define ENT_ENTRY_MASK                  (NUM_ENT_ENTRIES - 1)
+#define INVALID_EHANDLE_INDEX           0xFFFFFFFF
+
+#define NUM_SERIAL_NUM_SHIFT_BITS       16
 
 enum struct CBasePlayerOffsets
 {
@@ -86,10 +88,10 @@ methodmap CBaseHandle < AddressBase
 		return LookupEntity(this);
 	}
 	
-	public int GetEntryIndex()
-	{
-		return
-	}
+// 	public int GetEntryIndex()
+// 	{
+// 		return
+// 	}
 }
 
 methodmap CEntInfo < AddressBase
@@ -170,7 +172,8 @@ stock CBaseHandle LookupEntity(CBaseHandle handle)
 	
 	CEntInfo pInfo = view_as<CEntInfo>(g_pEntityList.m_EntPtrArray.Get32(handle.m_Index & ENT_ENTRY_MASK, CEntInfo.Size()));
 	
-	if(pInfo.m_SerialNumber == (handle.m_Index >> NUM_ENT_ENTRY_BITS))
+//	if(pInfo.m_SerialNumber == (handle.m_Index >> NUM_ENT_ENTRY_BITS))
+	if(pInfo.m_SerialNumber == (handle.m_Index >> NUM_SERIAL_NUM_SHIFT_BITS))
 		return pInfo.m_pEntity;
 	else
 		return view_as<CBaseHandle>(0);
