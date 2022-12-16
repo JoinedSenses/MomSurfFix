@@ -94,7 +94,7 @@
 			"CMoveData::m_vecAbsOrigin"             "156"
 			
 			//CGameTrace
-			"CGameTrace::m_pEnt"                    "74"
+			"CGameTrace::m_pEnt"                    "76"
 			"CGameTrace::hitbox"                    "80"
 			"CGameTrace::size"                      "84"
 			
