@@ -131,7 +131,7 @@
 				"windows"
 				{
 					"signature" "g_pMemAllocFunc"
-					"read" "189" // 0xBD
+					"read" "32" // 0x20
 					"read" "0"
 					"read" "0"
 				}
@@ -147,7 +147,7 @@
 				"linux"
 				{
 					"signature" "CGameMovement::TracePlayerBBox"
-					"read" "544"
+					"read" "475"
 				}
 			}
 			
@@ -156,12 +156,12 @@
 				"windows"
 				{
 					"signature" "CGameMovement::TryPlayerMove"
-					"read" "674"
+					"read" "802"
 				}
 				"linux"
 				{
 					"signature" "CGameMovement::TryPlayerMove"
-					"read" "590"
+					"read" "667"
 				}
 				
 				"read" "0"
@@ -208,14 +208,14 @@
 			"CGameMovement::TryPlayerMove"
 			{
 				"library"               "server"
-				"windows"               "\x55\x8B\xEC\x81\xEC\x44\x01\x00\x00\x56\x57\x33\xC0"
+				"windows"               "\x55\x8B\xEC\x81\xEC\x2C\x01\x00\x00\x56\x57"
 				"linux"                 "@_ZN13CGameMovement13TryPlayerMoveEP6VectorP10CGameTracef"
 			}
 			
 			"g_pMemAllocFunc"
 			{
 				"library"               "server"
-				"windows"               "\x55\x8B\xEC\x83\xEC\x0C\x56\x57\x8B\xF9\x33\xC0"
+				"windows"               "\x55\x8B\xEC\x56\x57\x8B\xF9\x8D\x4F\x18"
 			}
 			
 			"CGameMovement::ClipVelocity"
