@@ -133,11 +133,21 @@ stock void InitGameMovement(GameData gd)
 	//sm_pSingleton for late loading
 	sm_pSingleton = view_as<IMoveHelper>(gd.GetAddress("sm_pSingleton"));
 	
-	//CMoveHelperServer::CMoveHelperServer
-	Handle dhook = DHookCreateDetour(Address_Null, CallConv_CDECL, ReturnType_Int, ThisPointer_Ignore);
-	ASSERT_MSG(DHookSetFromConf(dhook, gd, SDKConf_Signature, "CMoveHelperServer::CMoveHelperServer"), "Failed to get \"CMoveHelperServer::CMoveHelperServer\" signature.");
-	DHookAddParam(dhook, HookParamType_Int/* , .flag = DHookPass_ByRef */);
-	DHookEnableDetour(dhook, true, CMoveHelperServer_Dhook);
+	if (gd.GetAddress("CMoveHelperServer::CMoveHelperServer"))
+	{
+		//CMoveHelperServer::CMoveHelperServer
+		Handle dhook = DHookCreateDetour(Address_Null, CallConv_CDECL, ReturnType_Int, ThisPointer_Ignore);
+		ASSERT_MSG(DHookSetFromConf(dhook, gd, SDKConf_Signature, "CMoveHelperServer::CMoveHelperServer"), "Failed to get \"CMoveHelperServer::CMoveHelperServer\" signature.");
+		DHookAddParam(dhook, HookParamType_Int/* , .flag = DHookPass_ByRef */);
+		DHookEnableDetour(dhook, true, CMoveHelperServer_Dhook);
+	}
+	else
+	{
+		// on linux, CMoveHelperServer is inlined into MoveHelperServer
+		Handle dhook = DHookCreateDetour(Address_Null, CallConv_CDECL, ReturnType_Int, ThisPointer_Ignore);
+		ASSERT_MSG(DHookSetFromConf(dhook, gd, SDKConf_Signature, "MoveHelperServer"), "Failed to get \"MoveHelperServer\" signature.");
+		DHookEnableDetour(dhook, true, CMoveHelperServer_Dhook);
+	}
 
 	
 	//AddToTouched

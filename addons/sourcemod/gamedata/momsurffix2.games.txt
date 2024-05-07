@@ -191,6 +191,12 @@
 				"linux"                 "@_ZN17CMoveHelperServerC2Ev"
 			}
 			
+			"MoveHelperServer"
+			{
+				"library"               "server"
+				"linux"                 "@_Z16MoveHelperServerv"
+			}
+			
 			"CTraceFilterSimple::CTraceFilterSimple"
 			{
 				"library"               "server"
