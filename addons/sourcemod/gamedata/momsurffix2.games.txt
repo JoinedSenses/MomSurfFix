@@ -156,7 +156,7 @@
 				"windows"
 				{
 					"signature" "CGameMovement::TryPlayerMove"
-					"read" "802"
+					"read" "793"
 				}
 				"linux"
 				{
@@ -188,7 +188,7 @@
 			{
 				"library"               "server"
 				"windows"               "\xA1\x2A\x2A\x2A\x2A\xA8\x01\x75\x2A\x83\xC8\x01\xC7\x05\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x68\x00\x30\x00\x00"
-				"linux"                 "@_ZN17CMoveHelperServerC2Ev"
+				"linux"                 "@_Z16MoveHelperServerv"
 			}
 			
 			"MoveHelperServer"
@@ -214,7 +214,7 @@
 			"CGameMovement::TryPlayerMove"
 			{
 				"library"               "server"
-				"windows"               "\x55\x8B\xEC\x81\xEC\x2C\x01\x00\x00\x56\x57"
+				"windows"               "\x55\x8B\xEC\x81\xEC\x2A\x01\x00\x00\x56\x57\x33\xC0"
 				"linux"                 "@_ZN13CGameMovement13TryPlayerMoveEP6VectorP10CGameTracef"
 			}
 			
