@@ -188,7 +188,7 @@
 			{
 				"library"               "server"
 				"windows"               "\xA1\x2A\x2A\x2A\x2A\xA8\x01\x75\x2A\x83\xC8\x01\xC7\x05\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x68\x00\x30\x00\x00"
-				"linux"                 "@_ZN17CMoveHelperServerC2Ev"
+				"linux"                 "@_Z16MoveHelperServerv"
 			}
 			
 			"MoveHelperServer"
